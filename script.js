@@ -494,3 +494,72 @@ function setupExport() {
     window.print();
   });
 }
+
+
+// ============ Landing Page Interactions ============
+document.addEventListener('DOMContentLoaded', () => {
+  // Smooth scroll for "Get Started" buttons
+  document.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.dataset.goto;
+      
+      // Update sidebar active state
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelector(`.nav-item[data-section="${target}"]`)?.classList.add('active');
+      
+      // Switch section
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const targetSection = document.getElementById(`section-${target}`);
+      if (targetSection) {
+        targetSection.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Update page title
+        const titles = {
+          analyze: ['Analyze Your Idea', 'Know why startups like yours failed — before you build.'],
+          history: ['Analysis History', 'Your past risk reports and insights.'],
+          database: ['Failure Database', '12,847 indexed startup failures across 6 regions.'],
+          pricing: ['Pricing', 'Choose the plan that fits your journey.']
+        };
+        if (titles[target]) {
+          const titleEl = document.getElementById('pageTitle');
+          const subtitleEl = document.getElementById('pageSubtitle');
+          if (titleEl) titleEl.textContent = titles[target][0];
+          if (subtitleEl) subtitleEl.textContent = titles[target][1];
+        }
+      }
+    });
+  });
+
+  // Animated counters
+  const counters = document.querySelectorAll('[data-count]');
+  const animateCounter = (el) => {
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const duration = 2000;
+    const start = performance.now();
+    
+    const tick = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(target * eased);
+      el.textContent = current.toLocaleString() + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString() + suffix;
+    };
+    requestAnimationFrame(tick);
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.animated) {
+        entry.target.dataset.animated = 'true';
+        animateCounter(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  counters.forEach(c => observer.observe(c));
+});
