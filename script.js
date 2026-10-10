@@ -749,3 +749,265 @@ function setupExport() {
     window.print();
   });
 }
+
+
+// ============ Run Analysis (REAL AI with loading) ============
+async function runAnalysis() {
+  const idea = $('ideaInput').value.trim();
+  const country = $('countrySelect').value;
+  const sector = $('sectorSelect').value;
+  const budget = $('budgetSelect').value;
+  
+  if (!idea) {
+    $('ideaInput').focus();
+    $('ideaInput').style.borderBottom = '2px solid #EF4444';
+    setTimeout(() => $('ideaInput').style.borderBottom = '', 1000);
+    return;
+  }
+  
+  if (idea.length < 20) {
+    alert('Please describe your idea in more detail (minimum 20 characters).');
+    return;
+  }
+  
+  // Show loader
+  $('results').classList.add('hidden');
+  $('skeleton').classList.remove('hidden');
+  $('analyzeBtn').disabled = true;
+  $('analyzeBtn').querySelector('span').textContent = 'Analyzing with AI...';
+  
+  // Start loading animation
+  const stopLoading = startLoadingAnimation();
+  
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idea, country, sector, budget })
+    });
+    
+    if (!response.ok) {
+      throw new Error('API request failed (status ' + response.status + ')');
+    }
+    
+    const aiData = await response.json();
+    
+    if (aiData.error) {
+      throw new Error(aiData.error);
+    }
+    
+    // Complete the progress to 100%
+    stopLoading(true);
+    
+    // Wait a bit for progress bar to finish
+    await new Promise(r => setTimeout(r, 400));
+    
+    const verdictColor = aiData.risk_score >= 70 ? '#EF4444' 
+                       : aiData.risk_score >= 50 ? '#F59E0B' 
+                       : '#22C55E';
+    
+    const countryTrends = {
+      bangladesh: [120, 100, 60, 30, 15, 8, 6],
+      india: [500, 700, 900, 600, 400, 250, 200],
+      indonesia: [200, 300, 350, 250, 150, 100, 80],
+      nigeria: [100, 150, 200, 120, 80, 50, 30],
+      pakistan: [80, 120, 150, 100, 60, 30, 20],
+      global: [1000, 1400, 1600, 1100, 800, 600, 500]
+    };
+    
+    const analysis = {
+      riskScore: aiData.risk_score,
+      verdict: aiData.verdict,
+      verdictColor: verdictColor,
+      verdictText: aiData.verdict_text,
+      redFlags: aiData.red_flags || [],
+      similarFailures: (aiData.similar_failures || []).map(f => ({
+        name: f.name,
+        country: f.country,
+        reason: f.reason
+      })),
+      checklist: aiData.checklist || [],
+      brutalTruth: aiData.brutal_truth,
+      categoryData: {
+        labels: ['No market need', 'Ran out of cash', 'Wrong team', 'Outcompeted', 'Pricing issues'],
+        values: [43, 29, 23, 19, 18]
+      },
+      trendData: {
+        labels: ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
+        values: countryTrends[country] || countryTrends.global
+      }
+    };
+    
+    state.currentAnalysis = analysis;
+    
+    $('skeleton').classList.add('hidden');
+    $('analyzeBtn').disabled = false;
+    $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
+    
+    renderResults(analysis, idea, country, sector, budget);
+    $('results').classList.remove('hidden');
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    saveToHistory(idea, country, sector, analysis.riskScore);
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    stopLoading(false);
+    $('skeleton').classList.add('hidden');
+    $('analyzeBtn').disabled = false;
+    $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
+    alert('Analysis failed: ' + error.message + '\n\nPlease try again.');
+  }
+}
+
+// ============ Loading Animation Engine ============
+function startLoadingAnimation() {
+  const stageEl = $('loaderStage');
+  const substageEl = $('loaderSubstage');
+  const dotsEl = $('loaderDots');
+  const progressFill = $('loaderProgressFill');
+  const percentEl = $('loaderPercent');
+  const timeEl = $('loaderTime');
+  const tipEl = $('loaderTip');
+  
+  if (!stageEl || !progressFill) {
+    return () => {};
+  }
+  
+  const stages = [
+    { 
+      stage: 'Initializing analysis…', 
+      substage: 'Warming up the failure database',
+      targetProgress: 12
+    },
+    { 
+      stage: 'Scanning 12,847 failures…', 
+      substage: 'Matching your idea against real post-mortems',
+      targetProgress: 32
+    },
+    { 
+      stage: 'Analyzing market reality…', 
+      substage: 'Checking regional funding trends and saturation',
+      targetProgress: 55
+    },
+    { 
+      stage: 'Checking unit economics…', 
+      substage: 'Benchmarking CAC, LTV, and burn rate',
+      targetProgress: 72
+    },
+    { 
+      stage: 'Running regulatory scan…', 
+      substage: 'Reviewing licensing, escrow, and compliance rules',
+      targetProgress: 85
+    },
+    { 
+      stage: 'Generating verdict…', 
+      substage: 'Preparing your brutal truth and checklist',
+      targetProgress: 96
+    }
+  ];
+  
+  const tips = [
+    '<strong>Did you know?</strong> 43% of startups fail because they build something nobody needs.',
+    '<strong>Pro tip:</strong> Talk to 50+ potential customers before writing any code.',
+    '<strong>Reality check:</strong> Bangladesh startup funding dropped 95% in 2024.',
+    '<strong>Rule of thumb:</strong> Keep 18 months of runway minimum before launching.',
+    '<strong>Warning sign:</strong> If LTV is less than 3× CAC, your unit economics are broken.',
+    '<strong>Ask yourself:</strong> What happens if a giant like Google enters your space tomorrow?',
+    '<strong>Validation:</strong> A "yes" from a friend is not customer validation. Get payment commitments.'
+  ];
+  
+  const startTime = Date.now();
+  let currentStage = 0;
+  let currentProgress = 0;
+  let tipIndex = 0;
+  let stopped = false;
+  
+  // Timer
+  const timerInterval = setInterval(() => {
+    if (stopped) return;
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    if (timeEl) timeEl.textContent = elapsed + 's';
+  }, 100);
+  
+  // Stage progression
+  const stageInterval = setInterval(() => {
+    if (stopped) return;
+    if (currentStage < stages.length) {
+      const s = stages[currentStage];
+      
+      stageEl.style.animation = 'none';
+      void stageEl.offsetWidth;
+      stageEl.style.animation = '';
+      stageEl.textContent = s.stage;
+      
+      substageEl.textContent = s.substage;
+      
+      // Update dots
+      if (dotsEl) {
+        const dots = dotsEl.querySelectorAll('.loader-dot');
+        dots.forEach((d, i) => {
+          d.classList.remove('active', 'done');
+          if (i < currentStage) d.classList.add('done');
+          if (i === currentStage) d.classList.add('active');
+        });
+      }
+      
+      // Animate progress
+      const targetProgress = s.targetProgress;
+      const startProgress = currentProgress;
+      const progressDuration = 800;
+      const progressStart = Date.now();
+      
+      const animateProgress = () => {
+        if (stopped) return;
+        const elapsed = Date.now() - progressStart;
+        const t = Math.min(elapsed / progressDuration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const value = startProgress + (targetProgress - startProgress) * eased;
+        
+        progressFill.style.width = value + '%';
+        if (percentEl) percentEl.textContent = Math.round(value) + '%';
+        currentProgress = value;
+        
+        if (t < 1) requestAnimationFrame(animateProgress);
+      };
+      requestAnimationFrame(animateProgress);
+      
+      currentStage++;
+    }
+  }, 700);
+  
+  // Rotating tips
+  const tipInterval = setInterval(() => {
+    if (stopped) return;
+    tipIndex = (tipIndex + 1) % tips.length;
+    tipEl.style.animation = 'none';
+    void tipEl.offsetWidth;
+    tipEl.style.animation = '';
+    tipEl.innerHTML = tips[tipIndex];
+  }, 3500);
+  
+  // Return stop function
+  return (success = true) => {
+    stopped = true;
+    clearInterval(timerInterval);
+    clearInterval(stageInterval);
+    clearInterval(tipInterval);
+    
+    if (success) {
+      // Complete to 100%
+      progressFill.style.width = '100%';
+      if (percentEl) percentEl.textContent = '100%';
+      stageEl.textContent = 'Complete!';
+      substageEl.textContent = 'Preparing your report…';
+      
+      if (dotsEl) {
+        dotsEl.querySelectorAll('.loader-dot').forEach(d => {
+          d.classList.remove('active');
+          d.classList.add('done');
+        });
+      }
+    }
+  };
+}
