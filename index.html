@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOOP — Startup Failure Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Animated Background Blobs -->
+  <div class="blob-container">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-mark">
+        <div class="logo-dot"></div>
+        <span class="logo-text">LOOP</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="analyze">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span>Analyze</span>
+      </a>
+      <a href="#" class="nav-item" data-section="history">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        <span>History</span>
+      </a>
+      <a href="#" class="nav-item" data-section="database">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>
+        </svg>
+        <span>Failure DB</span>
+      </a>
+      <a href="#" class="nav-item" data-section="pricing">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span>Pricing</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="theme-toggle">
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 id="pageTitle">Analyze Your Idea</h2>
+        <p id="pageSubtitle">Know why startups like yours failed — before you build.</p>
+      </div>
+      <div class="topbar-right">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>12,847 failures indexed</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION: Analyze -->
+    <section id="section-analyze" class="section active">
+
+      <!-- Input Card -->
+      <div class="glass-card input-card">
+        <div class="card-label">Your Startup Idea</div>
+        <textarea 
+          id="ideaInput" 
+          placeholder="Describe your startup idea in detail. For example: 'An AI-powered platform that helps small e-commerce sellers in Bangladesh manage inventory and predict demand.'"
+          rows="4"
+        ></textarea>
+
+        <div class="input-controls">
+          <div class="control-group">
+            <label>🌍 Region</label>
+            <select id="countrySelect">
+              <option value="bangladesh">🇧🇩 Bangladesh</option>
+              <option value="india">🇮🇳 India</option>
+              <option value="indonesia">🇮🇩 Indonesia</option>
+              <option value="nigeria">🇳🇬 Nigeria</option>
+              <option value="pakistan">🇵🇰 Pakistan</option>
+              <option value="global">🌐 Global</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>📊 Sector</label>
+            <select id="sectorSelect">
+              <option value="ecommerce">E-commerce</option>
+              <option value="fintech">Fintech</option>
+              <option value="edtech">EdTech</option>
+              <option value="healthtech">HealthTech</option>
+              <option value="agritech">AgriTech</option>
+              <option value="saas">SaaS</option>
+              <option value="marketplace">Marketplace</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>💰 Budget (USD)</label>
+            <select id="budgetSelect">
+              <option value="under5k">Under $5K</option>
+              <option value="5k-25k">$5K - $25K</option>
+              <option value="25k-100k">$25K - $100K</option>
+              <option value="over100k">Over $100K</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="analyzeBtn" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span>Analyze with AI</span>
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="results hidden">
+
+        <!-- Risk Score Hero -->
+        <div class="glass-card risk-hero">
+          <div class="risk-left">
+            <div class="risk-circle" id="riskCircle">
+              <svg viewBox="0 0 200 200" class="risk-svg">
+                <circle cx="100" cy="100" r="85" class="risk-track"/>
+                <circle cx="100" cy="100" r="85" class="risk-progress" id="riskProgress"/>
+              </svg>
+              <div class="risk-value">
+                <span id="riskScore">--</span>
+                <small>RISK SCORE</small>
+              </div>
+            </div>
+          </div>
+          <div class="risk-right">
+            <div class="verdict-badge" id="verdictBadge">Analyzing...</div>
+            <p class="verdict-text" id="verdictText"></p>
+            <div class="meta-chips">
+              <span class="chip" id="metaCountry">🌍</span>
+              <span class="chip" id="metaSector">📊</span>
+              <span class="chip" id="metaBudget">💰</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row -->
+        <div class="chart-row">
+          <div class="glass-card chart-card">
+            <h3>Failure Probability by Category</h3>
+            <canvas id="failureChart"></canvas>
+          </div>
+          <div class="glass-card chart-card">
+            <h3>Funding Trend (2020-2026)</h3>
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Red Flags -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3>🚩 Red Flags</h3>
+            <span class="count-badge" id="flagCount">0</span>
+          </div>
+          <ul id="redFlagsList" class="flags-list"></ul>
+        </div>
+
+        <!-- Similar Failures -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3>💀 Similar Failures</h3>
+          </div>
+          <div id="similarFailures" class="failures-grid"></div>
+        </div>
+
+        <!-- Checklist -->
+        <div class="glass-card">
+          <div class="card-header">
+            <h3>✅ Go / No-Go Checklist</h3>
+          </div>
+          <ul id="checklist" class="checklist"></ul>
+        </div>
+
+        <!-- Brutal Truth -->
+        <div class="brutal-truth">
+          <div class="brutal-icon">⚡</div>
+          <div>
+            <h3>The Brutal Truth</h3>
+            <p id="brutalTruth"></p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-row">
+          <button id="exportBtn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Export PDF
+          </button>
+          <button id="newAnalysisBtn" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            New Analysis
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Skeleton Loader -->
+      <div id="skeleton" class="skeleton hidden">
+        <div class="glass-card skeleton-line"></div>
+        <div class="chart-row">
+          <div class="glass-card skeleton-block"></div>
+          <div class="glass-card skeleton-block"></div>
+        </div>
+        <div class="glass-card skeleton-line"></div>
+      </div>
+
+    </section>
+
+    <!-- SECTION: History -->
+    <section id="section-history" class="section">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3>Your Analysis History</h3>
+          <button id="clearHistory" class="btn-text">Clear All</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <!-- SECTION: Database -->
+    <section id="section-database" class="section">
+      <div class="glass-card">
+        <h3>Startup Failure Database</h3>
+        <p style="color: var(--text-muted); margin-top: 8px;">200+ indexed failure cases (demo data shown)</p>
+        <div id="dbList" class="db-list"></div>
+      </div>
+    </section>
+
+    <!-- SECTION: Pricing -->
+    <section id="section-pricing" class="section">
+      <div class="pricing-grid">
+        <div class="glass-card pricing-card">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <ul>
+            <li>3 analyses per month</li>
+            <li>Basic risk report</li>
+            <li>Community support</li>
+          </ul>
+          <button class="btn-secondary">Current Plan</button>
+        </div>
+        <div class="glass-card pricing-card featured">
+          <div class="badge-featured">Most Popular</div>
+          <h3>Pro</h3>
+          <div class="price">$29<span>/mo</span></div>
+          <ul>
+            <li>Unlimited analyses</li>
+            <li>PDF export</li>
+            <li>Priority AI</li>
+            <li>Region comparison</li>
+          </ul>
+          <button class="btn-primary">Upgrade</button>
+        </div>
+        <div class="glass-card pricing-card">
+          <h3>Team</h3>
+          <div class="price">$99<span>/mo</span></div>
+          <ul>
+            <li>5 seats</li>
+            <li>Shared workspace</li>
+            <li>API access</li>
+          </ul>
+          <button class="btn-secondary">Contact</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
