@@ -77,9 +77,10 @@
   <!-- Main Content -->
   <main class="main">
 
-    <!-- SECTION: HOME / LANDING -->
+    <!-- ============ SECTION: HOME / LANDING ============ -->
     <section id="section-home" class="section active">
 
+      <!-- Hero -->
       <div class="landing-hero">
         <div class="landing-badge">
           <span class="status-dot"></span>
@@ -105,6 +106,7 @@
         <p class="hero-note">No signup. No credit card. Just answers.</p>
       </div>
 
+      <!-- Live Stats -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-value" data-count="12847">0</div>
@@ -124,6 +126,7 @@
         </div>
       </div>
 
+      <!-- Why LOOP -->
       <div class="landing-section">
         <h2 class="section-heading">Why founders use LOOP</h2>
         <p class="section-subheading">Most tools tell you what's trending. LOOP tells you what's already dead.</p>
@@ -162,6 +165,7 @@
         </div>
       </div>
 
+      <!-- How it works -->
       <div class="landing-section">
         <h2 class="section-heading">How LOOP works</h2>
         <p class="section-subheading">Three steps. Under two minutes. Zero fluff.</p>
@@ -185,6 +189,7 @@
         </div>
       </div>
 
+      <!-- FAQ -->
       <div class="landing-section">
         <h2 class="section-heading">Frequently asked</h2>
         <div class="faq-list">
@@ -211,6 +216,7 @@
         </div>
       </div>
 
+      <!-- Final CTA -->
       <div class="final-cta">
         <h2>Stop building blind.</h2>
         <p>Find out in 60 seconds whether your idea has been tried — and why it failed.</p>
@@ -222,6 +228,7 @@
         </button>
       </div>
 
+      <!-- Footer -->
       <footer class="landing-footer">
         <div class="footer-content">
           <div class="footer-brand">
@@ -258,7 +265,7 @@
 
     </section>
 
-    <!-- SECTION: ANALYZE -->
+    <!-- ============ SECTION: ANALYZE ============ -->
     <section id="section-analyze" class="section">
       <div class="topbar">
         <div class="topbar-left">
@@ -273,6 +280,7 @@
         </div>
       </div>
 
+      <!-- Input Card -->
       <div class="glass-card input-card">
         <div class="card-label">Your Startup Idea</div>
         <textarea 
@@ -327,7 +335,44 @@
         </button>
       </div>
 
-      <!-- Results (Layer 3 Enhanced) -->
+      <!-- ============ LOADER SCREEN (Layer 4) ============ -->
+      <div id="skeleton" class="hidden">
+        <div class="loader-screen">
+          <div class="loader-orb">
+            <div class="loader-orb-core"></div>
+            <div class="loader-orb-ring"></div>
+            <div class="loader-orb-ring"></div>
+            <div class="loader-orb-ring"></div>
+          </div>
+
+          <div class="loader-stage" id="loaderStage">Initializing analysis…</div>
+          <div class="loader-substage" id="loaderSubstage">Warming up the failure database</div>
+
+          <div class="loader-dots" id="loaderDots">
+            <div class="loader-dot active"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+          </div>
+
+          <div class="loader-progress-wrap">
+            <div class="loader-progress-bar">
+              <div class="loader-progress-fill" id="loaderProgressFill"></div>
+            </div>
+            <div class="loader-progress-meta">
+              <span id="loaderPercent">0%</span>
+              <span id="loaderTime">0.0s</span>
+            </div>
+          </div>
+
+          <div class="loader-tip" id="loaderTip">
+            <strong>Did you know?</strong> 43% of startups fail because they build something nobody needs.
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ RESULTS (Layer 3 Enhanced) ============ -->
       <div id="results" class="results hidden">
 
         <!-- Report Header -->
@@ -531,19 +576,9 @@
         </div>
 
       </div>
-
-      <!-- Skeleton Loader -->
-      <div id="skeleton" class="skeleton hidden">
-        <div class="glass-card skeleton-line"></div>
-        <div class="chart-row">
-          <div class="glass-card skeleton-block"></div>
-          <div class="glass-card skeleton-block"></div>
-        </div>
-        <div class="glass-card skeleton-line"></div>
-      </div>
     </section>
 
-    <!-- SECTION: HISTORY -->
+    <!-- ============ SECTION: HISTORY ============ -->
     <section id="section-history" class="section">
       <div class="glass-card">
         <div class="card-header">
@@ -554,7 +589,7 @@
       </div>
     </section>
 
-    <!-- SECTION: DATABASE -->
+    <!-- ============ SECTION: DATABASE ============ -->
     <section id="section-database" class="section">
       <div class="glass-card">
         <h3>Startup Failure Database</h3>
@@ -563,7 +598,7 @@
       </div>
     </section>
 
-    <!-- SECTION: PRICING -->
+    <!-- ============ SECTION: PRICING ============ -->
     <section id="section-pricing" class="section">
       <div class="pricing-grid">
         <div class="glass-card pricing-card">
