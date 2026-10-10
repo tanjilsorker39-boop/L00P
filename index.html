@@ -80,7 +80,6 @@
     <!-- SECTION: HOME / LANDING -->
     <section id="section-home" class="section active">
 
-      <!-- Hero -->
       <div class="landing-hero">
         <div class="landing-badge">
           <span class="status-dot"></span>
@@ -106,7 +105,6 @@
         <p class="hero-note">No signup. No credit card. Just answers.</p>
       </div>
 
-      <!-- Live Stats -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-value" data-count="12847">0</div>
@@ -126,7 +124,6 @@
         </div>
       </div>
 
-      <!-- Why LOOP -->
       <div class="landing-section">
         <h2 class="section-heading">Why founders use LOOP</h2>
         <p class="section-subheading">Most tools tell you what's trending. LOOP tells you what's already dead.</p>
@@ -165,7 +162,6 @@
         </div>
       </div>
 
-      <!-- How it works -->
       <div class="landing-section">
         <h2 class="section-heading">How LOOP works</h2>
         <p class="section-subheading">Three steps. Under two minutes. Zero fluff.</p>
@@ -189,7 +185,6 @@
         </div>
       </div>
 
-      <!-- FAQ -->
       <div class="landing-section">
         <h2 class="section-heading">Frequently asked</h2>
         <div class="faq-list">
@@ -216,7 +211,6 @@
         </div>
       </div>
 
-      <!-- Final CTA -->
       <div class="final-cta">
         <h2>Stop building blind.</h2>
         <p>Find out in 60 seconds whether your idea has been tried — and why it failed.</p>
@@ -228,7 +222,6 @@
         </button>
       </div>
 
-      <!-- Footer -->
       <footer class="landing-footer">
         <div class="footer-content">
           <div class="footer-brand">
@@ -280,7 +273,6 @@
         </div>
       </div>
 
-      <!-- Input Card -->
       <div class="glass-card input-card">
         <div class="card-label">Your Startup Idea</div>
         <textarea 
@@ -335,11 +327,39 @@
         </button>
       </div>
 
-      <!-- Results -->
+      <!-- Results (Layer 3 Enhanced) -->
       <div id="results" class="results hidden">
-        <div class="glass-card risk-hero">
+
+        <!-- Report Header -->
+        <div class="report-header">
+          <div class="report-meta">
+            <div class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>Analyzed <strong id="analysisTime">just now</strong></span>
+            </div>
+            <div class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Report ID: <strong id="reportId">--</strong></span>
+            </div>
+          </div>
+          <div class="report-actions">
+            <button id="copyLinkBtn" class="btn-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy Link
+            </button>
+          </div>
+        </div>
+
+        <!-- Enhanced Risk Hero -->
+        <div class="risk-hero-enhanced">
           <div class="risk-left">
-            <div class="risk-circle" id="riskCircle">
+            <div class="risk-circle-lg" id="riskCircle">
               <svg viewBox="0 0 200 200" class="risk-svg">
                 <defs>
                   <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -356,9 +376,18 @@
               </div>
             </div>
           </div>
-          <div class="risk-right">
+          <div class="risk-verdict-wrap">
             <div class="verdict-badge" id="verdictBadge">Analyzing...</div>
             <p class="verdict-text" id="verdictText"></p>
+            
+            <div class="confidence-row">
+              <span>AI Confidence</span>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceFill"></div>
+              </div>
+              <strong id="confidenceValue">--%</strong>
+            </div>
+
             <div class="meta-chips">
               <span class="chip" id="metaCountry">🌍</span>
               <span class="chip" id="metaSector">📊</span>
@@ -367,61 +396,140 @@
           </div>
         </div>
 
-        <div class="chart-row">
-          <div class="glass-card chart-card">
-            <h3>Failure Probability by Category</h3>
-            <canvas id="failureChart"></canvas>
+        <!-- Tabs Navigation -->
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+          <button class="tab-btn" data-tab="failures">
+            💀 Similar Failures
+            <span class="tab-count" id="tabFailuresCount">0</span>
+          </button>
+          <button class="tab-btn" data-tab="flags">
+            🚩 Red Flags
+            <span class="tab-count" id="tabFlagsCount">0</span>
+          </button>
+          <button class="tab-btn" data-tab="checklist">✅ Checklist</button>
+          <button class="tab-btn" data-tab="regions">🌍 Regions</button>
+        </div>
+
+        <!-- Tab: Overview -->
+        <div class="tab-panel active" id="tab-overview">
+          <div class="chart-row">
+            <div class="glass-card chart-card">
+              <h3>Failure Probability by Category</h3>
+              <canvas id="failureChart"></canvas>
+            </div>
+            <div class="glass-card chart-card">
+              <h3>Funding Trend (2020-2026)</h3>
+              <canvas id="trendChart"></canvas>
+            </div>
           </div>
-          <div class="glass-card chart-card">
-            <h3>Funding Trend (2020-2026)</h3>
-            <canvas id="trendChart"></canvas>
+
+          <div class="glass-card">
+            <h3>Risk Breakdown</h3>
+            <div class="category-breakdown">
+              <div class="breakdown-item">
+                <div class="breakdown-label">Market Need</div>
+                <div class="breakdown-value danger" id="bd-market">--</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-label">Competition</div>
+                <div class="breakdown-value warning" id="bd-comp">--</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-label">Unit Econ</div>
+                <div class="breakdown-value warning" id="bd-econ">--</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-label">Regulatory</div>
+                <div class="breakdown-value danger" id="bd-reg">--</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-label">Team</div>
+                <div class="breakdown-value success" id="bd-team">--</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-label">Timing</div>
+                <div class="breakdown-value warning" id="bd-time">--</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="glass-card">
-          <div class="card-header">
-            <h3>🚩 Red Flags</h3>
-            <span class="count-badge" id="flagCount">0</span>
+        <!-- Tab: Failures -->
+        <div class="tab-panel" id="tab-failures">
+          <div class="glass-card">
+            <div class="card-header">
+              <h3>Similar Startup Failures</h3>
+            </div>
+            <div id="similarFailures" class="failures-grid"></div>
           </div>
-          <ul id="redFlagsList" class="flags-list"></ul>
         </div>
 
-        <div class="glass-card">
-          <div class="card-header">
-            <h3>💀 Similar Failures</h3>
+        <!-- Tab: Red Flags -->
+        <div class="tab-panel" id="tab-flags">
+          <div class="glass-card">
+            <div class="card-header">
+              <h3>🚩 Red Flags</h3>
+              <span class="count-badge" id="flagCount">0</span>
+            </div>
+            <ul id="redFlagsList" class="flags-list"></ul>
           </div>
-          <div id="similarFailures" class="failures-grid"></div>
         </div>
 
-        <div class="glass-card">
-          <div class="card-header">
-            <h3>✅ Go / No-Go Checklist</h3>
+        <!-- Tab: Checklist -->
+        <div class="tab-panel" id="tab-checklist">
+          <div class="glass-card">
+            <div class="card-header">
+              <h3>✅ Go / No-Go Checklist</h3>
+            </div>
+            <ul id="checklist" class="checklist"></ul>
           </div>
-          <ul id="checklist" class="checklist"></ul>
         </div>
 
-        <div class="brutal-truth">
+        <!-- Tab: Regions -->
+        <div class="tab-panel" id="tab-regions">
+          <div class="glass-card">
+            <div class="card-header">
+              <h3>🌍 Region Comparison</h3>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+              Same idea, different regions. Each market has unique failure patterns.
+            </p>
+            <div class="region-compare" id="regionCompare"></div>
+          </div>
+        </div>
+
+        <!-- Enhanced Brutal Truth -->
+        <div class="brutal-truth-enhanced">
           <div class="brutal-icon">⚡</div>
           <div>
-            <h3>The Brutal Truth</h3>
+            <h3></h3>
             <p id="brutalTruth"></p>
           </div>
         </div>
 
-        <div class="action-row">
-          <button id="exportBtn" class="btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-            </svg>
-            Export PDF
-          </button>
-          <button id="newAnalysisBtn" class="btn-secondary">
+        <!-- Enhanced Actions -->
+        <div class="action-row-enhanced">
+          <button id="newAnalysisBtn" class="btn-action">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 5v14M5 12h14"/>
             </svg>
             New Analysis
           </button>
+          <button id="exportBtn" class="btn-action">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Export PDF
+          </button>
+          <button id="reanalyzeBtn" class="btn-action primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+            Re-analyze
+          </button>
         </div>
+
       </div>
 
       <!-- Skeleton Loader -->
