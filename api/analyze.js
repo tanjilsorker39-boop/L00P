@@ -1,15 +1,15 @@
-// api/analyze.js
+// api/analyze.js — Gemini version
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  
+
   const { idea, country, sector, budget } = req.body;
-  
+
   if (!idea) {
     return res.status(400).json({ error: 'Idea required' });
   }
-  
+
   const prompt = `You are LOOP's startup risk analyst. Analyze this startup idea brutally honestly.
 
 Idea: ${idea}
@@ -42,28 +42,66 @@ Rules:
 - Use Bengali for user-facing text (verdict_text, brutal_truth)
 - Use English for technical fields
 - Never invent specific company names or fake data
-- If unsure, say "insufficient data"`;
+- If unsure, say "insufficient data"
+- Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const apiKey = process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.7
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: 'application/json'
+        }
       })
     });
-    
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error:', errorText);
+      return res.status(500).json({ error: 'Gemini API failed: ' + response.status });
+    }
+
     const data = await response.json();
-    const analysis = JSON.parse(data.choices[0].message.content);
+    
+    // Extract text from Gemini response
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!text) {
+      return res.status(500).json({ error: 'No response from Gemini' });
+    }
+
+    // Parse JSON (remove markdown code fences if any)
+    let cleaned = text.trim();
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    const analysis = JSON.parse(cleaned);
     res.status(200).json(analysis);
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Analysis failed' });
+    console.error('Analysis error:', error);
+    res.status(500).json({ error: 'Analysis failed: ' + error.message });
   }
 }
