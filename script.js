@@ -1,5 +1,5 @@
 // ============ LOOP — Startup Failure Intelligence ============
-// Full version: Landing + Analyze + Tabs + Loader + Dynamic DB (Layer 1-4, 6)
+// Full version: Landing + Analyze + Tabs + Loader + Dynamic DB + Auth
 
 const $ = (id) => document.getElementById(id);
 
@@ -69,6 +69,9 @@ let state = {
   allFailures: []
 };
 
+let supabase = null;
+let currentUser = null;
+
 // ============ Init ============
 document.addEventListener('DOMContentLoaded', () => {
   setupNavigation();
@@ -84,7 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
   setupLandingInteractions();
   setupMobileNav();
   setupMobileThemeToggle();
+  setupAuth();
   loadHistory();
+  
+  // Init Supabase after DOM is ready
+  setTimeout(() => {
+    initSupabase();
+  }, 100);
 });
 
 // ============ Navigation ============
@@ -99,7 +108,6 @@ function setupNavigation() {
 }
 
 function navigateToSection(section) {
-  // Sync mobile nav
   document.querySelectorAll('.mobile-nav-item').forEach(n => {
     n.classList.toggle('active', n.dataset.section === section);
   });
@@ -167,7 +175,6 @@ function setupMobileNav() {
     item.addEventListener('click', () => {
       const section = item.dataset.section;
       navigateToSection(section);
-      
       if (navigator.vibrate) navigator.vibrate(10);
     });
   });
@@ -188,7 +195,7 @@ function setupAnalyze() {
   });
 }
 
-// ============ Run Analysis (REAL AI with loading) ============
+// ============ Run Analysis ============
 async function runAnalysis() {
   const idea = $('ideaInput').value.trim();
   const country = $('countrySelect').value;
@@ -282,6 +289,10 @@ async function runAnalysis() {
     
     saveToHistory(idea, country, sector, analysis.riskScore);
     
+    if (currentUser && supabase) {
+      saveToCloud(idea, country, sector, budget, analysis);
+    }
+    
   } catch (error) {
     console.error('Analysis error:', error);
     stopLoading(false);
@@ -292,7 +303,7 @@ async function runAnalysis() {
   }
 }
 
-// ============ Loading Animation Engine ============
+// ============ Loading Animation ============
 function startLoadingAnimation() {
   const stageEl = $('loaderStage');
   const substageEl = $('loaderSubstage');
@@ -302,9 +313,7 @@ function startLoadingAnimation() {
   const timeEl = $('loaderTime');
   const tipEl = $('loaderTip');
   
-  if (!stageEl || !progressFill) {
-    return () => {};
-  }
+  if (!stageEl || !progressFill) return () => {};
   
   const stages = [
     { stage: 'Initializing analysis…', substage: 'Warming up the failure database', targetProgress: 12 },
@@ -346,7 +355,6 @@ function startLoadingAnimation() {
       void stageEl.offsetWidth;
       stageEl.style.animation = '';
       stageEl.textContent = s.stage;
-      
       substageEl.textContent = s.substage;
       
       if (dotsEl) {
@@ -477,7 +485,6 @@ function renderResults(analysis, idea, country, sector, budget) {
   if (brutalTruthEl) brutalTruthEl.textContent = analysis.brutalTruth;
   
   renderCharts(analysis);
-  
   animateConfidence(analysis.riskScore);
   renderBreakdown(analysis.riskScore);
   renderRegionComparison(country, analysis.riskScore);
@@ -500,6 +507,7 @@ function renderCharts(analysis) {
   const trendCanvas = $('trendChart');
   
   if (!failureCanvas || !trendCanvas) return;
+  if (typeof Chart === 'undefined') return;
   
   if (state.charts.failure) state.charts.failure.destroy();
   if (state.charts.trend) state.charts.trend.destroy();
@@ -613,10 +621,8 @@ function setupTabs() {
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.tab;
-      
       tabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
       tabPanels.forEach(p => p.classList.remove('active'));
       $(`tab-${target}`)?.classList.add('active');
       
@@ -656,18 +662,15 @@ function renderRegionComparison(currentCountry, baseScore) {
   }).join('');
 }
 
-// ============ Confidence Animation ============
+// ============ Confidence ============
 function animateConfidence(score) {
   const confidence = Math.round(75 + Math.random() * 20);
-  
   const fillEl = $('confidenceFill');
   const valueEl = $('confidenceValue');
   
   if (fillEl) {
     fillEl.style.width = '0%';
-    setTimeout(() => {
-      fillEl.style.width = confidence + '%';
-    }, 100);
+    setTimeout(() => { fillEl.style.width = confidence + '%'; }, 100);
   }
   
   if (valueEl) {
@@ -807,7 +810,7 @@ function setupChecklist() {
   });
 }
 
-// ============ History ============
+// ============ History (Local) ============
 function saveToHistory(idea, country, sector, score) {
   const history = JSON.parse(localStorage.getItem('loop-history') || '[]');
   history.unshift({
@@ -1047,22 +1050,22 @@ function setupExport() {
   });
 }
 
-
-
 // ============================================================
-// ============ SUPABASE AUTH + CLOUD HISTORY (Layer 7) =======
+// ============ SUPABASE AUTH (Layer 7) =======================
 // ============================================================
-
-let supabase = null;
-let currentUser = null;
 
 async function initSupabase() {
   try {
+    if (typeof window.supabase === 'undefined') {
+      console.warn('Supabase SDK not loaded');
+      return false;
+    }
+    
     const res = await fetch('/api/config');
     const config = await res.json();
     
     if (!config.supabaseUrl || !config.supabaseAnonKey) {
-      console.warn('Supabase not configured — running local-only');
+      console.warn('Supabase not configured');
       return false;
     }
     
@@ -1102,11 +1105,13 @@ function setupAuth() {
   const authForm = $('authForm');
   const authSwitchBtn = $('authSwitchBtn');
   
+  if (!signInBtn || !authModal) return;
+  
   let isSignUp = false;
   
   const openModal = () => {
     if (!supabase) {
-      alert('Authentication is not configured yet.');
+      alert('Authentication is loading. Please wait a moment and try again.');
       return;
     }
     authModal.classList.remove('hidden');
@@ -1115,11 +1120,11 @@ function setupAuth() {
   
   const closeModal = () => {
     authModal.classList.add('hidden');
-    authForm.reset();
-    $('authError').classList.add('hidden');
+    if (authForm) authForm.reset();
+    $('authError')?.classList.add('hidden');
   };
   
-  signInBtn?.addEventListener('click', openModal);
+  signInBtn.addEventListener('click', openModal);
   signOutBtn?.addEventListener('click', async () => {
     if (!confirm('Sign out?')) return;
     await supabase.auth.signOut();
@@ -1129,7 +1134,7 @@ function setupAuth() {
   });
   
   authModalClose?.addEventListener('click', closeModal);
-  authModal?.addEventListener('click', (e) => {
+  authModal.addEventListener('click', (e) => {
     if (e.target === authModal) closeModal();
   });
   
@@ -1149,7 +1154,7 @@ function setupAuth() {
       : "Don't have an account?";
     $('authSwitchBtn').textContent = isSignUp ? 'Sign In' : 'Sign Up';
     $('authPassword').setAttribute('autocomplete', isSignUp ? 'new-password' : 'current-password');
-    $('authError').classList.add('hidden');
+    $('authError')?.classList.add('hidden');
   });
   
   authForm?.addEventListener('submit', async (e) => {
@@ -1162,6 +1167,11 @@ function setupAuth() {
     const errorEl = $('authError');
     
     if (!email || !password) return;
+    if (!supabase) {
+      errorEl.textContent = 'Authentication is loading. Please wait.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
     
     submitBtn.disabled = true;
     submitText.textContent = isSignUp ? 'Creating account…' : 'Signing in…';
@@ -1305,12 +1315,3 @@ function getTimeAgo(date) {
   if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
   return date.toLocaleDateString();
 }
-
-// ============ Initialize Layer 7 ============
-document.addEventListener('DOMContentLoaded', () => {
-  // Wait a bit for main DOMContentLoaded to finish
-  setTimeout(() => {
-    setupAuth();
-    initSupabase();
-  }, 100);
-});
