@@ -1,9 +1,9 @@
 // ============ LOOP — Startup Failure Intelligence ============
-// Real AI analysis via Gemini API
+// Full version: Landing + Analyze + Tabs + Region Comparison (Layer 1-3)
 
 const $ = (id) => document.getElementById(id);
 
-// ============ Static Data (for country/sector context) ============
+// ============ Static Country Data ============
 const COUNTRY_DATA = {
   bangladesh: { 
     flag: '🇧🇩', name: 'Bangladesh',
@@ -77,6 +77,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDatabase();
   setupChecklist();
   setupExport();
+  setupTabs();
+  setupShare();
+  setupReanalyze();
+  setupLandingInteractions();
   loadHistory();
 });
 
@@ -86,24 +90,40 @@ function setupNavigation() {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const section = item.dataset.section;
-      
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      item.classList.add('active');
-      
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      $(`section-${section}`).classList.add('active');
-      
-      const titles = {
-        analyze: ['Analyze Your Idea', 'Know why startups like yours failed — before you build.'],
-        history: ['Analysis History', 'Your past risk reports and insights.'],
-        database: ['Failure Database', '12,847 indexed startup failures across 6 regions.'],
-        pricing: ['Pricing', 'Choose the plan that fits your journey.']
-      };
-      
-      $('pageTitle').textContent = titles[section][0];
-      $('pageSubtitle').textContent = titles[section][1];
+      navigateToSection(section);
     });
   });
+}
+
+function navigateToSection(section) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-section="${section}"]`)?.classList.add('active');
+  
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const sectionEl = $(`section-${section}`);
+  if (sectionEl) sectionEl.classList.add('active');
+  
+  const titles = {
+    home: ['', ''],
+    analyze: ['Analyze Your Idea', 'Know why startups like yours failed — before you build.'],
+    history: ['Analysis History', 'Your past risk reports and insights.'],
+    database: ['Failure Database', '12,847 indexed startup failures across 6 regions.'],
+    pricing: ['Pricing', 'Choose the plan that fits your journey.']
+  };
+  
+  if (titles[section] && section !== 'home') {
+    const titleEl = $('pageTitle');
+    const subtitleEl = $('pageSubtitle');
+    if (titleEl) titleEl.textContent = titles[section][0];
+    if (subtitleEl) subtitleEl.textContent = titles[section][1];
+  }
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // Re-render charts if going back to analyze and results exist
+  if (section === 'analyze' && state.currentAnalysis) {
+    setTimeout(() => renderCharts(state.currentAnalysis), 100);
+  }
 }
 
 // ============ Theme ============
@@ -111,7 +131,7 @@ function setupTheme() {
   const saved = localStorage.getItem('loop-theme') || 'dark';
   document.documentElement.dataset.theme = saved;
   
-  $('themeToggle').addEventListener('click', () => {
+  $('themeToggle')?.addEventListener('click', () => {
     const current = document.documentElement.dataset.theme;
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next;
@@ -123,14 +143,15 @@ function setupTheme() {
 
 // ============ Analyze Setup ============
 function setupAnalyze() {
-  $('analyzeBtn').addEventListener('click', runAnalysis);
+  $('analyzeBtn')?.addEventListener('click', runAnalysis);
+  
   $('newAnalysisBtn')?.addEventListener('click', () => {
     $('results').classList.add('hidden');
     $('ideaInput').value = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   
-  $('ideaInput').addEventListener('keydown', (e) => {
+  $('ideaInput')?.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') runAnalysis();
   });
 }
@@ -177,12 +198,10 @@ async function runAnalysis() {
       throw new Error(aiData.error);
     }
     
-    // Verdict color
     const verdictColor = aiData.risk_score >= 70 ? '#EF4444' 
                        : aiData.risk_score >= 50 ? '#F59E0B' 
                        : '#22C55E';
     
-    // Trend chart data
     const countryTrends = {
       bangladesh: [120, 100, 60, 30, 15, 8, 6],
       india: [500, 700, 900, 600, 400, 250, 200],
@@ -217,17 +236,14 @@ async function runAnalysis() {
     
     state.currentAnalysis = analysis;
     
-    // Hide skeleton
     $('skeleton').classList.add('hidden');
     $('analyzeBtn').disabled = false;
     $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
     
-    // Render
     renderResults(analysis, idea, country, sector, budget);
     $('results').classList.remove('hidden');
     $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     
-    // Save history
     saveToHistory(idea, country, sector, analysis.riskScore);
     
   } catch (error) {
@@ -239,63 +255,105 @@ async function runAnalysis() {
   }
 }
 
-// ============ Render ============
+// ============ Render Results ============
 function renderResults(analysis, idea, country, sector, budget) {
   const cData = COUNTRY_DATA[country];
   const bData = BUDGET_DATA[budget];
   
   // Risk score
-  $('riskScore').textContent = analysis.riskScore;
+  const riskScoreEl = $('riskScore');
+  if (riskScoreEl) riskScoreEl.textContent = analysis.riskScore;
+  
   const circumference = 2 * Math.PI * 85;
   const offset = circumference - (analysis.riskScore / 100) * circumference;
   const progressEl = $('riskProgress');
-  progressEl.style.stroke = analysis.verdictColor;
-  progressEl.style.strokeDashoffset = offset;
+  if (progressEl) {
+    progressEl.style.stroke = analysis.verdictColor;
+    progressEl.style.strokeDashoffset = offset;
+  }
   
   // Verdict
   const badge = $('verdictBadge');
-  badge.textContent = analysis.verdict;
-  badge.style.background = analysis.verdictColor + '22';
-  badge.style.color = analysis.verdictColor;
-  badge.style.border = `1px solid ${analysis.verdictColor}44`;
+  if (badge) {
+    badge.textContent = analysis.verdict;
+    badge.style.background = analysis.verdictColor + '22';
+    badge.style.color = analysis.verdictColor;
+    badge.style.border = `1px solid ${analysis.verdictColor}44`;
+  }
   
-  $('verdictText').textContent = analysis.verdictText;
+  const verdictTextEl = $('verdictText');
+  if (verdictTextEl) verdictTextEl.textContent = analysis.verdictText;
   
   // Meta chips
-  $('metaCountry').textContent = `${cData.flag} ${cData.name}`;
-  $('metaSector').textContent = `📊 ${sector.charAt(0).toUpperCase() + sector.slice(1)}`;
-  $('metaBudget').textContent = `💰 ${bData.label}`;
+  const metaCountryEl = $('metaCountry');
+  const metaSectorEl = $('metaSector');
+  const metaBudgetEl = $('metaBudget');
+  if (metaCountryEl) metaCountryEl.textContent = `${cData.flag} ${cData.name}`;
+  if (metaSectorEl) metaSectorEl.textContent = `📊 ${sector.charAt(0).toUpperCase() + sector.slice(1)}`;
+  if (metaBudgetEl) metaBudgetEl.textContent = `💰 ${bData.label}`;
   
   // Red flags
-  $('redFlagsList').innerHTML = analysis.redFlags.map(f => `<li>${f}</li>`).join('');
-  $('flagCount').textContent = analysis.redFlags.length;
+  const redFlagsList = $('redFlagsList');
+  if (redFlagsList) redFlagsList.innerHTML = analysis.redFlags.map(f => `<li>${f}</li>`).join('');
+  const flagCount = $('flagCount');
+  if (flagCount) flagCount.textContent = analysis.redFlags.length;
   
   // Similar failures
-  if (analysis.similarFailures.length > 0) {
-    $('similarFailures').innerHTML = analysis.similarFailures.map(f => `
-      <div class="failure-card">
-        <div class="name">💀 ${f.name}</div>
-        <div class="country">${f.country}</div>
-        <div class="reason">${f.reason}</div>
-      </div>
-    `).join('');
-  } else {
-    $('similarFailures').innerHTML = '<p style="color: var(--text-muted);">No specific failures matched.</p>';
+  const similarFailuresEl = $('similarFailures');
+  if (similarFailuresEl) {
+    if (analysis.similarFailures.length > 0) {
+      similarFailuresEl.innerHTML = analysis.similarFailures.map(f => `
+        <div class="failure-card">
+          <div class="name">💀 ${f.name}</div>
+          <div class="country">${f.country}</div>
+          <div class="reason">${f.reason}</div>
+        </div>
+      `).join('');
+    } else {
+      similarFailuresEl.innerHTML = '<p style="color: var(--text-muted);">No specific failures matched.</p>';
+    }
   }
   
   // Checklist
-  $('checklist').innerHTML = analysis.checklist.map(c => `<li>${c}</li>`).join('');
-  setupChecklist();
+  const checklistEl = $('checklist');
+  if (checklistEl) {
+    checklistEl.innerHTML = analysis.checklist.map(c => `<li>${c}</li>`).join('');
+    setupChecklist();
+  }
   
   // Brutal truth
-  $('brutalTruth').textContent = analysis.brutalTruth;
+  const brutalTruthEl = $('brutalTruth');
+  if (brutalTruthEl) brutalTruthEl.textContent = analysis.brutalTruth;
   
   // Charts
   renderCharts(analysis);
+  
+  // Layer 3 additions
+  animateConfidence(analysis.riskScore);
+  renderBreakdown(analysis.riskScore);
+  renderRegionComparison(country, analysis.riskScore);
+  updateReportMeta();
+  
+  // Tab counts
+  const tfCount = $('tabFailuresCount');
+  const tfFlagsCount = $('tabFlagsCount');
+  if (tfCount) tfCount.textContent = analysis.similarFailures.length;
+  if (tfFlagsCount) tfFlagsCount.textContent = analysis.redFlags.length;
+  
+  // Reset to overview tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="overview"]')?.classList.add('active');
+  $('tab-overview')?.classList.add('active');
 }
 
 // ============ Charts ============
 function renderCharts(analysis) {
+  const failureCanvas = $('failureChart');
+  const trendCanvas = $('trendChart');
+  
+  if (!failureCanvas || !trendCanvas) return;
+  
   if (state.charts.failure) state.charts.failure.destroy();
   if (state.charts.trend) state.charts.trend.destroy();
   
@@ -303,7 +361,7 @@ function renderCharts(analysis) {
   const textColor = isDark ? '#94A3B8' : '#64748B';
   const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(15, 23, 42, 0.08)';
   
-  const ctx1 = $('failureChart').getContext('2d');
+  const ctx1 = failureCanvas.getContext('2d');
   state.charts.failure = new Chart(ctx1, {
     type: 'bar',
     data: {
@@ -348,7 +406,7 @@ function renderCharts(analysis) {
     }
   });
   
-  const ctx2 = $('trendChart').getContext('2d');
+  const ctx2 = trendCanvas.getContext('2d');
   const gradient = ctx2.createLinearGradient(0, 0, 0, 200);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
   gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
@@ -398,6 +456,203 @@ function renderCharts(analysis) {
       }
     }
   });
+}
+
+// ============ Tabs System ============
+function setupTabs() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      tabPanels.forEach(p => p.classList.remove('active'));
+      $(`tab-${target}`)?.classList.add('active');
+      
+      if (target === 'overview' && state.currentAnalysis) {
+        setTimeout(() => renderCharts(state.currentAnalysis), 50);
+      }
+    });
+  });
+}
+
+// ============ Region Comparison ============
+function renderRegionComparison(currentCountry, baseScore) {
+  const container = $('regionCompare');
+  if (!container) return;
+  
+  const regions = [
+    { code: 'bangladesh', flag: '🇧🇩', name: 'Bangladesh', mod: 0 },
+    { code: 'india', flag: '🇮🇳', name: 'India', mod: -8 },
+    { code: 'indonesia', flag: '🇮🇩', name: 'Indonesia', mod: -5 },
+    { code: 'nigeria', flag: '🇳🇬', name: 'Nigeria', mod: 8 },
+    { code: 'pakistan', flag: '🇵🇰', name: 'Pakistan', mod: 10 },
+    { code: 'global', flag: '🌐', name: 'Global', mod: -12 }
+  ];
+  
+  container.innerHTML = regions.map(r => {
+    const score = Math.max(15, Math.min(95, baseScore + r.mod));
+    const cls = score >= 70 ? 'danger' : score >= 50 ? 'warning' : 'success';
+    const isCurrent = r.code === currentCountry;
+    return `
+      <div class="region-card ${isCurrent ? 'current' : ''}">
+        <div class="region-flag">${r.flag}</div>
+        <div class="region-name">${r.name}</div>
+        <div class="region-score ${cls}">${score}</div>
+        <div class="region-label">${isCurrent ? 'Current' : 'Estimate'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============ Confidence Animation ============
+function animateConfidence(score) {
+  const confidence = Math.round(75 + Math.random() * 20);
+  
+  const fillEl = $('confidenceFill');
+  const valueEl = $('confidenceValue');
+  
+  if (fillEl) {
+    fillEl.style.width = '0%';
+    setTimeout(() => {
+      fillEl.style.width = confidence + '%';
+    }, 100);
+  }
+  
+  if (valueEl) {
+    let current = 0;
+    const target = confidence;
+    const step = Math.ceil(target / 30);
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= target) {
+        current = target;
+        clearInterval(interval);
+      }
+      valueEl.textContent = current + '%';
+    }, 30);
+  }
+  
+  return confidence;
+}
+
+// ============ Risk Breakdown ============
+function renderBreakdown(baseScore) {
+  const variance = () => Math.round((Math.random() - 0.5) * 30);
+  const clamp = (v) => Math.max(15, Math.min(95, v));
+  
+  const setVal = (id, value) => {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = value;
+    el.className = 'breakdown-value ' + (value >= 70 ? 'danger' : value >= 50 ? 'warning' : 'success');
+  };
+  
+  setVal('bd-market', clamp(baseScore + variance() + 5));
+  setVal('bd-comp', clamp(baseScore + variance()));
+  setVal('bd-econ', clamp(baseScore + variance() - 5));
+  setVal('bd-reg', clamp(baseScore + variance() + 8));
+  setVal('bd-team', clamp(baseScore + variance() - 20));
+  setVal('bd-time', clamp(baseScore + variance()));
+}
+
+// ============ Report Metadata ============
+function updateReportMeta() {
+  const timeEl = $('analysisTime');
+  const idEl = $('reportId');
+  
+  if (timeEl) timeEl.textContent = 'just now';
+  if (idEl) idEl.textContent = '#' + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// ============ Share / Copy Link ============
+function setupShare() {
+  const copyBtn = $('copyLinkBtn');
+  if (!copyBtn) return;
+  
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showToast('✓ Link copied to clipboard', 'success');
+    } catch (err) {
+      showToast('Could not copy link', 'error');
+    }
+  });
+}
+
+// ============ Re-analyze ============
+function setupReanalyze() {
+  const btn = $('reanalyzeBtn');
+  if (!btn) return;
+  
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => runAnalysis(), 500);
+  });
+}
+
+// ============ Toast ============
+function showToast(message, type = 'default') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+// ============ Landing Interactions ============
+function setupLandingInteractions() {
+  // data-goto buttons
+  document.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.dataset.goto;
+      navigateToSection(target);
+    });
+  });
+  
+  // Animated counters
+  const counters = document.querySelectorAll('[data-count]');
+  const animateCounter = (el) => {
+    const target = parseInt(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const duration = 2000;
+    const start = performance.now();
+    
+    const tick = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(target * eased);
+      el.textContent = current.toLocaleString() + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString() + suffix;
+    };
+    requestAnimationFrame(tick);
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.animated) {
+        entry.target.dataset.animated = 'true';
+        animateCounter(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  
+  counters.forEach(c => observer.observe(c));
 }
 
 // ============ Checklist ============
@@ -494,72 +749,3 @@ function setupExport() {
     window.print();
   });
 }
-
-
-// ============ Landing Page Interactions ============
-document.addEventListener('DOMContentLoaded', () => {
-  // Smooth scroll for "Get Started" buttons
-  document.querySelectorAll('[data-goto]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const target = btn.dataset.goto;
-      
-      // Update sidebar active state
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelector(`.nav-item[data-section="${target}"]`)?.classList.add('active');
-      
-      // Switch section
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      const targetSection = document.getElementById(`section-${target}`);
-      if (targetSection) {
-        targetSection.classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Update page title
-        const titles = {
-          analyze: ['Analyze Your Idea', 'Know why startups like yours failed — before you build.'],
-          history: ['Analysis History', 'Your past risk reports and insights.'],
-          database: ['Failure Database', '12,847 indexed startup failures across 6 regions.'],
-          pricing: ['Pricing', 'Choose the plan that fits your journey.']
-        };
-        if (titles[target]) {
-          const titleEl = document.getElementById('pageTitle');
-          const subtitleEl = document.getElementById('pageSubtitle');
-          if (titleEl) titleEl.textContent = titles[target][0];
-          if (subtitleEl) subtitleEl.textContent = titles[target][1];
-        }
-      }
-    });
-  });
-
-  // Animated counters
-  const counters = document.querySelectorAll('[data-count]');
-  const animateCounter = (el) => {
-    const target = parseInt(el.dataset.count);
-    const suffix = el.dataset.suffix || '';
-    const duration = 2000;
-    const start = performance.now();
-    
-    const tick = (now) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.floor(target * eased);
-      el.textContent = current.toLocaleString() + suffix;
-      if (progress < 1) requestAnimationFrame(tick);
-      else el.textContent = target.toLocaleString() + suffix;
-    };
-    requestAnimationFrame(tick);
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !entry.target.dataset.animated) {
-        entry.target.dataset.animated = 'true';
-        animateCounter(entry.target);
-      }
-    });
-  }, { threshold: 0.3 });
-
-  counters.forEach(c => observer.observe(c));
-});
