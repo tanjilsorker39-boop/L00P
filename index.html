@@ -10,8 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+  <!-- Skip Link (Accessibility) -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- Animated Background Blobs -->
   <div class="blob-container">
@@ -63,7 +67,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <button id="themeToggle" class="theme-toggle">
+      <button id="themeToggle" class="theme-toggle" style="margin-bottom:8px;">
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
         </svg>
@@ -71,16 +75,56 @@
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      
+      <!-- Auth Section -->
+      <div id="authSection">
+        <button id="signInBtn" class="btn-secondary" style="width:100%;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+          </svg>
+          Sign In
+        </button>
+      </div>
+      
+      <!-- Logged in User Section -->
+      <div id="userSection" class="hidden">
+        <div class="user-card">
+          <div class="user-avatar" id="userAvatar">U</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">User</div>
+            <div class="user-email" id="userEmail">-</div>
+          </div>
+        </div>
+        <button id="signOutBtn" class="btn-text" style="width:100%;text-align:center;margin-top:8px;">
+          Sign Out
+        </button>
+      </div>
     </div>
   </aside>
 
+  <!-- Mobile Header (Mobile Only) -->
+  <header class="mobile-header">
+    <div class="mobile-header-inner">
+      <div class="mobile-logo">LOOP</div>
+      <div class="mobile-header-actions">
+        <button id="themeToggleMobile" class="theme-toggle" style="width:auto;padding:8px 10px;">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
   <!-- Main Content -->
-  <main class="main">
+  <main class="main" id="main-content">
 
     <!-- ============ SECTION: HOME / LANDING ============ -->
     <section id="section-home" class="section active">
 
-      <!-- Hero -->
       <div class="landing-hero">
         <div class="landing-badge">
           <span class="status-dot"></span>
@@ -106,7 +150,6 @@
         <p class="hero-note">No signup. No credit card. Just answers.</p>
       </div>
 
-      <!-- Live Stats -->
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-value" data-count="12847">0</div>
@@ -126,7 +169,6 @@
         </div>
       </div>
 
-      <!-- Why LOOP -->
       <div class="landing-section">
         <h2 class="section-heading">Why founders use LOOP</h2>
         <p class="section-subheading">Most tools tell you what's trending. LOOP tells you what's already dead.</p>
@@ -165,7 +207,6 @@
         </div>
       </div>
 
-      <!-- How it works -->
       <div class="landing-section">
         <h2 class="section-heading">How LOOP works</h2>
         <p class="section-subheading">Three steps. Under two minutes. Zero fluff.</p>
@@ -189,7 +230,6 @@
         </div>
       </div>
 
-      <!-- FAQ -->
       <div class="landing-section">
         <h2 class="section-heading">Frequently asked</h2>
         <div class="faq-list">
@@ -216,7 +256,6 @@
         </div>
       </div>
 
-      <!-- Final CTA -->
       <div class="final-cta">
         <h2>Stop building blind.</h2>
         <p>Find out in 60 seconds whether your idea has been tried — and why it failed.</p>
@@ -228,7 +267,6 @@
         </button>
       </div>
 
-      <!-- Footer -->
       <footer class="landing-footer">
         <div class="footer-content">
           <div class="footer-brand">
@@ -280,7 +318,6 @@
         </div>
       </div>
 
-      <!-- Input Card -->
       <div class="glass-card input-card">
         <div class="card-label">Your Startup Idea</div>
         <textarea 
@@ -335,7 +372,7 @@
         </button>
       </div>
 
-      <!-- ============ LOADER SCREEN (Layer 4) ============ -->
+      <!-- Loader Screen -->
       <div id="skeleton" class="hidden">
         <div class="loader-screen">
           <div class="loader-orb">
@@ -372,10 +409,9 @@
         </div>
       </div>
 
-      <!-- ============ RESULTS (Layer 3 Enhanced) ============ -->
+      <!-- Results -->
       <div id="results" class="results hidden">
 
-        <!-- Report Header -->
         <div class="report-header">
           <div class="report-meta">
             <div class="meta-item">
@@ -401,7 +437,6 @@
           </div>
         </div>
 
-        <!-- Enhanced Risk Hero -->
         <div class="risk-hero-enhanced">
           <div class="risk-left">
             <div class="risk-circle-lg" id="riskCircle">
@@ -441,7 +476,6 @@
           </div>
         </div>
 
-        <!-- Tabs Navigation -->
         <div class="tabs-nav">
           <button class="tab-btn active" data-tab="overview">📊 Overview</button>
           <button class="tab-btn" data-tab="failures">
@@ -456,7 +490,6 @@
           <button class="tab-btn" data-tab="regions">🌍 Regions</button>
         </div>
 
-        <!-- Tab: Overview -->
         <div class="tab-panel active" id="tab-overview">
           <div class="chart-row">
             <div class="glass-card chart-card">
@@ -500,7 +533,6 @@
           </div>
         </div>
 
-        <!-- Tab: Failures -->
         <div class="tab-panel" id="tab-failures">
           <div class="glass-card">
             <div class="card-header">
@@ -510,7 +542,6 @@
           </div>
         </div>
 
-        <!-- Tab: Red Flags -->
         <div class="tab-panel" id="tab-flags">
           <div class="glass-card">
             <div class="card-header">
@@ -521,7 +552,6 @@
           </div>
         </div>
 
-        <!-- Tab: Checklist -->
         <div class="tab-panel" id="tab-checklist">
           <div class="glass-card">
             <div class="card-header">
@@ -531,7 +561,6 @@
           </div>
         </div>
 
-        <!-- Tab: Regions -->
         <div class="tab-panel" id="tab-regions">
           <div class="glass-card">
             <div class="card-header">
@@ -544,7 +573,6 @@
           </div>
         </div>
 
-        <!-- Enhanced Brutal Truth -->
         <div class="brutal-truth-enhanced">
           <div class="brutal-icon">⚡</div>
           <div>
@@ -553,7 +581,6 @@
           </div>
         </div>
 
-        <!-- Enhanced Actions -->
         <div class="action-row-enhanced">
           <button id="newAnalysisBtn" class="btn-action">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -637,6 +664,85 @@
     </section>
 
   </main>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-nav" aria-label="Main navigation">
+    <div class="mobile-nav-inner">
+      <button class="mobile-nav-item active" data-section="home" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>Home</span>
+      </button>
+      <button class="mobile-nav-item" data-section="analyze" aria-label="Analyze">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span>Analyze</span>
+      </button>
+      <button class="mobile-nav-item" data-section="history" aria-label="History">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        <span>History</span>
+      </button>
+      <button class="mobile-nav-item" data-section="database" aria-label="Failure database">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>
+        </svg>
+        <span>Failures</span>
+      </button>
+      <button class="mobile-nav-item" data-section="pricing" aria-label="Pricing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span>Pricing</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="auth-modal hidden">
+    <div class="auth-modal-content">
+      <button class="failure-modal-close" id="authModalClose">×</button>
+      
+      <div class="auth-header">
+        <div class="logo-mark">
+          <div class="logo-dot"></div>
+          <span class="logo-text">LOOP</span>
+        </div>
+        <h2 id="authTitle">Welcome back</h2>
+        <p id="authSubtitle">Sign in to save your analysis history</p>
+      </div>
+      
+      <form id="authForm" class="auth-form">
+        <div class="auth-field">
+          <label for="authEmail">Email</label>
+          <input type="email" id="authEmail" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        
+        <div class="auth-field">
+          <label for="authPassword">Password</label>
+          <input type="password" id="authPassword" placeholder="Minimum 6 characters" required minlength="6" autocomplete="current-password" />
+        </div>
+        
+        <div id="authError" class="auth-error hidden"></div>
+        
+        <button type="submit" class="btn-primary" id="authSubmitBtn">
+          <span id="authSubmitText">Sign In</span>
+        </button>
+      </form>
+      
+      <div class="auth-switch">
+        <span id="authSwitchText">Don't have an account?</span>
+        <button type="button" id="authSwitchBtn" class="btn-text">Sign Up</button>
+      </div>
+      
+      <div class="auth-note">
+        🔒 We never train AI on your ideas. Your data is yours.
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
