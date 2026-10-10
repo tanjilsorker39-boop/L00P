@@ -1,9 +1,9 @@
 // ============ LOOP — Startup Failure Intelligence ============
-// Pro-level demo analysis. AI-ready (OpenAI API can be plugged in).
+// Real AI analysis via Gemini API
 
 const $ = (id) => document.getElementById(id);
 
-// ============ Data ============
+// ============ Static Data (for country/sector context) ============
 const COUNTRY_DATA = {
   bangladesh: { 
     flag: '🇧🇩', name: 'Bangladesh',
@@ -53,57 +53,6 @@ const COUNTRY_DATA = {
     regulatory: 'Varies by country',
     burnRate: 'Varies'
   }
-};
-
-const SECTOR_RISKS = {
-  ecommerce: [
-    'Cash-intensive operation — প্রতিদিন working capital লাগবে',
-    'Consumer trust damaged (Evaly/E-Orange কেলেঙ্কারির পর)',
-    'Escrow regulations — customer prepayment ব্যবহার কঠিন',
-    'Last-mile delivery খরচ margin খেয়ে ফেলে'
-  ],
-  fintech: [
-    'Bangladesh Bank/RBI লাইসেন্স — ৬-১৮ মাস লাগে',
-    'Fraud detection infrastructure ছাড়া চলবে না',
-    'CAC বেশি — trust-building সময়সাপেক্ষ',
-    'Regulatory changes প্রতি বছর'
-  ],
-  edtech: [
-    'Payment willingness কম — সবাই ফ্রি চায়',
-    'Course completion rate মাত্র ৫-১০%',
-    'Content production খরচ বেশি',
-    "BYJU'S-এর মতো over-expansion এড়ান"
-  ],
-  healthtech: [
-    'Medical liability — আইনি ঝুঁকি বিশাল',
-    'Doctor adoption ধীর — tech-averse',
-    'Regulatory approval (DGDA) লাগবে',
-    'Patient data privacy — HIPAA-সদৃশ নিয়ম'
-  ],
-  agritech: [
-    'Farmer digital literacy কম',
-    'Distribution চ্যানেল — গ্রামে পৌঁছানো কঠিন',
-    'Seasonal revenue — কিছু মাসে শূন্য',
-    'Weather-dependent outcomes'
-  ],
-  saas: [
-    'Global competition — pricing pressure',
-    'Churn rate > 5% হলে business model ভাঙবে',
-    'Sales cycle দীর্ঘ (৩-৬ মাস)',
-    'Support cost scale-এ বাড়ে'
-  ],
-  marketplace: [
-    'Chicken-and-egg problem — supply vs demand',
-    'Take rate কম হলে unit economics কাজ করে না',
-    'Trust & safety infrastructure ব্যয়বহুল',
-    'Disintermediation — user platform ছেড়ে চলে যায়'
-  ],
-  other: [
-    'Product-market fit আগে যাচাই করুন — ৫০+ customer interview',
-    'Cash burn কমান — minimum ১৮ মাসের রানওয়ে',
-    'Competitor analysis করুন — ১০+ প্রতিদ্বন্দ্বী',
-    'Clear differentiation না থাকলে মরে যাবে'
-  ]
 };
 
 const BUDGET_DATA = {
@@ -168,12 +117,11 @@ function setupTheme() {
     document.documentElement.dataset.theme = next;
     localStorage.setItem('loop-theme', next);
     
-    // Re-render charts
     if (state.currentAnalysis) renderCharts(state.currentAnalysis);
   });
 }
 
-// ============ Analyze ============
+// ============ Analyze Setup ============
 function setupAnalyze() {
   $('analyzeBtn').addEventListener('click', runAnalysis);
   $('newAnalysisBtn')?.addEventListener('click', () => {
@@ -187,6 +135,7 @@ function setupAnalyze() {
   });
 }
 
+// ============ Run Analysis (REAL AI) ============
 async function runAnalysis() {
   const idea = $('ideaInput').value.trim();
   const country = $('countrySelect').value;
@@ -209,138 +158,85 @@ async function runAnalysis() {
   $('results').classList.add('hidden');
   $('skeleton').classList.remove('hidden');
   $('analyzeBtn').disabled = true;
-  $('analyzeBtn').querySelector('span').textContent = 'Analyzing...';
+  $('analyzeBtn').querySelector('span').textContent = 'Analyzing with AI...';
   
-  // Simulate AI delay (replace with real API call later)
-  await new Promise(r => setTimeout(r, 1800));
-  
-  // Run analysis
-  const analysis = analyzeIdea(idea, country, sector, budget);
-  state.currentAnalysis = analysis;
-  
-  // Hide skeleton
-  $('skeleton').classList.add('hidden');
-  $('analyzeBtn').disabled = false;
-  $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
-  
-  // Render
-  renderResults(analysis, idea, country, sector, budget);
-  $('results').classList.remove('hidden');
-  $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  
-  // Save history
-  saveToHistory(idea, country, sector, analysis.riskScore);
-}
-
-function analyzeIdea(idea, country, sector, budget) {
-  const cData = COUNTRY_DATA[country];
-  const sRisks = SECTOR_RISKS[sector] || SECTOR_RISKS.other;
-  const bData = BUDGET_DATA[budget];
-  const lower = idea.toLowerCase();
-  
-  // Base score
-  let score = 45;
-  
-  // Country risk
-  const countryRisk = { bangladesh: 15, india: 10, indonesia: 8, nigeria: 18, pakistan: 20, global: 5 };
-  score += countryRisk[country];
-  
-  // Sector risk
-  const sectorRisk = { ecommerce: 15, fintech: 12, edtech: 18, healthtech: 10, agritech: 15, saas: 5, marketplace: 12, other: 8 };
-  score += sectorRisk[sector];
-  
-  // Budget
-  score += bData.risk;
-  
-  // Idea quality signals
-  if (idea.length < 50) score += 15;
-  if (idea.length > 150) score -= 8;
-  if (/\b(ai|machine learning|ml|llm|gpt)\b/i.test(idea)) score -= 10;
-  if (/\b(blockchain|crypto|nft|web3)\b/i.test(idea)) score += 12;
-  if (/\b(another|yet another|clone|copy)\b/i.test(idea)) score += 20;
-  if (/\b(revolutionary|disrupt|next big)\b/i.test(idea)) score += 8;
-  if (/\b(solve|problem|pain point|need)\b/i.test(idea)) score -= 8;
-  if (/\b(niche|specific|target)\b/i.test(idea)) score -= 5;
-  
-  // Clamp
-  score = Math.max(15, Math.min(95, Math.round(score)));
-  
-  // Verdict
-  let verdict, verdictColor, verdictText;
-  if (score >= 70) {
-    verdict = 'HIGH RISK';
-    verdictColor = '#EF4444';
-    verdictText = 'এই আইডিয়াতে ঢোকার আগে আরও যাচাই করুন। ব্যর্থতার সম্ভাবনা অনেক বেশি।';
-  } else if (score >= 50) {
-    verdict = 'CAUTION';
-    verdictColor = '#F59E0B';
-    verdictText = 'আইডিয়া সম্ভাবনাময়, কিন্তু বেশ কিছু ঝুঁকি আছে যা এড়াতে হবে।';
-  } else {
-    verdict = 'WORTH EXPLORING';
-    verdictColor = '#22C55E';
-    verdictText = 'আইডিয়াটি তুলনামূলক কম ঝুঁকিপূর্ণ। তবে validation ছাড়া এগোবেন না।';
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idea, country, sector, budget })
+    });
+    
+    if (!response.ok) {
+      throw new Error('API request failed (status ' + response.status + ')');
+    }
+    
+    const aiData = await response.json();
+    
+    if (aiData.error) {
+      throw new Error(aiData.error);
+    }
+    
+    // Verdict color
+    const verdictColor = aiData.risk_score >= 70 ? '#EF4444' 
+                       : aiData.risk_score >= 50 ? '#F59E0B' 
+                       : '#22C55E';
+    
+    // Trend chart data
+    const countryTrends = {
+      bangladesh: [120, 100, 60, 30, 15, 8, 6],
+      india: [500, 700, 900, 600, 400, 250, 200],
+      indonesia: [200, 300, 350, 250, 150, 100, 80],
+      nigeria: [100, 150, 200, 120, 80, 50, 30],
+      pakistan: [80, 120, 150, 100, 60, 30, 20],
+      global: [1000, 1400, 1600, 1100, 800, 600, 500]
+    };
+    
+    const analysis = {
+      riskScore: aiData.risk_score,
+      verdict: aiData.verdict,
+      verdictColor: verdictColor,
+      verdictText: aiData.verdict_text,
+      redFlags: aiData.red_flags || [],
+      similarFailures: (aiData.similar_failures || []).map(f => ({
+        name: f.name,
+        country: f.country,
+        reason: f.reason
+      })),
+      checklist: aiData.checklist || [],
+      brutalTruth: aiData.brutal_truth,
+      categoryData: {
+        labels: ['No market need', 'Ran out of cash', 'Wrong team', 'Outcompeted', 'Pricing issues'],
+        values: [43, 29, 23, 19, 18]
+      },
+      trendData: {
+        labels: ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
+        values: countryTrends[country] || countryTrends.global
+      }
+    };
+    
+    state.currentAnalysis = analysis;
+    
+    // Hide skeleton
+    $('skeleton').classList.add('hidden');
+    $('analyzeBtn').disabled = false;
+    $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
+    
+    // Render
+    renderResults(analysis, idea, country, sector, budget);
+    $('results').classList.remove('hidden');
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Save history
+    saveToHistory(idea, country, sector, analysis.riskScore);
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    $('skeleton').classList.add('hidden');
+    $('analyzeBtn').disabled = false;
+    $('analyzeBtn').querySelector('span').textContent = 'Analyze with AI';
+    alert('Analysis failed: ' + error.message + '\n\nPlease try again.');
   }
-  
-  // Red flags
-  const redFlags = [
-    ...sRisks.slice(0, 3),
-    `${cData.name}-এ top failure reason: ${cData.topFailure}`,
-    `Funding trend: ${cData.fundingChange}% (গত ২ বছরে)`,
-    `Regulatory: ${cData.regulatory}`
-  ];
-  
-  // Similar failures
-  const similarFailures = cData.examples.map(name => ({
-    name,
-    country: cData.flag + ' ' + cData.name,
-    reason: cData.topFailure
-  }));
-  
-  // Checklist
-  const checklist = [
-    '৫০+ সম্ভাব্য customer-এর সাথে কথা বলেছেন?',
-    'প্রতিদ্বন্দ্বীদের pricing ও features জানেন?',
-    'প্রথম ৬ মাসের খরচের হিসাব করেছেন?',
-    'Product-market fit-এর signal কী হবে জানেন?',
-    'কোন metric দেখলে বুঝবেন এটা কাজ করছে না?',
-    'Regulatory/legal requirement জানেন?',
-    'Unit economics-এ LTV > 3x CAC হবে?'
-  ];
-  
-  // Brutal truth
-  const brutalTruths = [
-    `আপনি হয়তো আপনার ভিশনকে বাজারের চেয়ে বেশি ভালোবাসছেন। ${cData.name}-এ ${cData.fundingChange}% funding কমেছে — investor-রা এখন নির্বাচনী।`,
-    `${cData.examples[0]}-ও একসময় আপনার মতোই আত্মবিশ্বাসী ছিল। কিন্তু cash burn, market timing, এবং customer acquisition-এ হেরে গেছে।`,
-    `আপনার sector-এ unit economics শুরু থেকেই positive হতে হবে। ১৮ মাসের কম runway থাকলে শুরুই করবেন না।`,
-    `৫০ জন customer interview না করে এক লাইন কোডও লিখবেন না। এটাই #1 মৃত্যুর কারণ।`
-  ];
-  
-  // Chart data
-  const categoryData = {
-    labels: ['No market need', 'Ran out of cash', 'Wrong team', 'Outcompeted', 'Pricing issues'],
-    values: [43, 29, 23, 19, 18]
-  };
-  
-  const trendData = {
-    labels: ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
-    values: country === 'bangladesh' ? [120, 100, 60, 30, 15, 8, 6] :
-           country === 'india' ? [500, 700, 900, 600, 400, 250, 200] :
-           country === 'global' ? [1000, 1400, 1600, 1100, 800, 600, 500] :
-           [80, 100, 90, 60, 40, 25, 20]
-  };
-  
-  return {
-    riskScore: score,
-    verdict,
-    verdictColor,
-    verdictText,
-    redFlags,
-    similarFailures,
-    checklist,
-    brutalTruth: brutalTruths[Math.floor(Math.random() * brutalTruths.length)],
-    categoryData,
-    trendData
-  };
 }
 
 // ============ Render ============
@@ -375,13 +271,17 @@ function renderResults(analysis, idea, country, sector, budget) {
   $('flagCount').textContent = analysis.redFlags.length;
   
   // Similar failures
-  $('similarFailures').innerHTML = analysis.similarFailures.map(f => `
-    <div class="failure-card">
-      <div class="name">💀 ${f.name}</div>
-      <div class="country">${f.country}</div>
-      <div class="reason">${f.reason}</div>
-    </div>
-  `).join('');
+  if (analysis.similarFailures.length > 0) {
+    $('similarFailures').innerHTML = analysis.similarFailures.map(f => `
+      <div class="failure-card">
+        <div class="name">💀 ${f.name}</div>
+        <div class="country">${f.country}</div>
+        <div class="reason">${f.reason}</div>
+      </div>
+    `).join('');
+  } else {
+    $('similarFailures').innerHTML = '<p style="color: var(--text-muted);">No specific failures matched.</p>';
+  }
   
   // Checklist
   $('checklist').innerHTML = analysis.checklist.map(c => `<li>${c}</li>`).join('');
@@ -394,8 +294,8 @@ function renderResults(analysis, idea, country, sector, budget) {
   renderCharts(analysis);
 }
 
+// ============ Charts ============
 function renderCharts(analysis) {
-  // Destroy old charts
   if (state.charts.failure) state.charts.failure.destroy();
   if (state.charts.trend) state.charts.trend.destroy();
   
@@ -403,7 +303,6 @@ function renderCharts(analysis) {
   const textColor = isDark ? '#94A3B8' : '#64748B';
   const gridColor = isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(15, 23, 42, 0.08)';
   
-  // Failure chart
   const ctx1 = $('failureChart').getContext('2d');
   state.charts.failure = new Chart(ctx1, {
     type: 'bar',
@@ -449,7 +348,6 @@ function renderCharts(analysis) {
     }
   });
   
-  // Trend chart
   const ctx2 = $('trendChart').getContext('2d');
   const gradient = ctx2.createLinearGradient(0, 0, 0, 200);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
