@@ -1046,3 +1046,271 @@ function setupExport() {
     window.print();
   });
 }
+
+
+
+// ============================================================
+// ============ SUPABASE AUTH + CLOUD HISTORY (Layer 7) =======
+// ============================================================
+
+let supabase = null;
+let currentUser = null;
+
+async function initSupabase() {
+  try {
+    const res = await fetch('/api/config');
+    const config = await res.json();
+    
+    if (!config.supabaseUrl || !config.supabaseAnonKey) {
+      console.warn('Supabase not configured — running local-only');
+      return false;
+    }
+    
+    supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      updateAuthUI();
+      await loadCloudHistory();
+    }
+    
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        currentUser = session.user;
+        updateAuthUI();
+        await loadCloudHistory();
+      } else {
+        currentUser = null;
+        updateAuthUI();
+        loadHistory();
+      }
+    });
+    
+    return true;
+  } catch (err) {
+    console.error('Supabase init error:', err);
+    return false;
+  }
+}
+
+function setupAuth() {
+  const signInBtn = $('signInBtn');
+  const signOutBtn = $('signOutBtn');
+  const authModal = $('authModal');
+  const authModalClose = $('authModalClose');
+  const authForm = $('authForm');
+  const authSwitchBtn = $('authSwitchBtn');
+  
+  let isSignUp = false;
+  
+  const openModal = () => {
+    if (!supabase) {
+      alert('Authentication is not configured yet.');
+      return;
+    }
+    authModal.classList.remove('hidden');
+    setTimeout(() => $('authEmail')?.focus(), 100);
+  };
+  
+  const closeModal = () => {
+    authModal.classList.add('hidden');
+    authForm.reset();
+    $('authError').classList.add('hidden');
+  };
+  
+  signInBtn?.addEventListener('click', openModal);
+  signOutBtn?.addEventListener('click', async () => {
+    if (!confirm('Sign out?')) return;
+    await supabase.auth.signOut();
+    currentUser = null;
+    updateAuthUI();
+    showToast('Signed out', 'success');
+  });
+  
+  authModalClose?.addEventListener('click', closeModal);
+  authModal?.addEventListener('click', (e) => {
+    if (e.target === authModal) closeModal();
+  });
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && authModal && !authModal.classList.contains('hidden')) closeModal();
+  });
+  
+  authSwitchBtn?.addEventListener('click', () => {
+    isSignUp = !isSignUp;
+    $('authTitle').textContent = isSignUp ? 'Create your account' : 'Welcome back';
+    $('authSubtitle').textContent = isSignUp 
+      ? 'Save your analysis history across devices' 
+      : 'Sign in to save your analysis history';
+    $('authSubmitText').textContent = isSignUp ? 'Sign Up' : 'Sign In';
+    $('authSwitchText').textContent = isSignUp 
+      ? 'Already have an account?' 
+      : "Don't have an account?";
+    $('authSwitchBtn').textContent = isSignUp ? 'Sign In' : 'Sign Up';
+    $('authPassword').setAttribute('autocomplete', isSignUp ? 'new-password' : 'current-password');
+    $('authError').classList.add('hidden');
+  });
+  
+  authForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    const submitBtn = $('authSubmitBtn');
+    const submitText = $('authSubmitText');
+    const errorEl = $('authError');
+    
+    if (!email || !password) return;
+    
+    submitBtn.disabled = true;
+    submitText.textContent = isSignUp ? 'Creating account…' : 'Signing in…';
+    errorEl.classList.add('hidden');
+    
+    try {
+      let result;
+      if (isSignUp) {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
+      
+      if (result.error) throw result.error;
+      
+      if (isSignUp && !result.data.session) {
+        errorEl.textContent = '✓ Account created! Please sign in.';
+        errorEl.style.background = 'rgba(34, 197, 94, 0.1)';
+        errorEl.style.borderLeftColor = '#22C55E';
+        errorEl.style.color = '#86EFAC';
+        errorEl.classList.remove('hidden');
+        
+        setTimeout(() => {
+          isSignUp = false;
+          $('authTitle').textContent = 'Welcome back';
+          $('authSubtitle').textContent = 'Sign in to save your analysis history';
+          $('authSubmitText').textContent = 'Sign In';
+          $('authSwitchText').textContent = "Don't have an account?";
+          $('authSwitchBtn').textContent = 'Sign Up';
+          errorEl.classList.add('hidden');
+          errorEl.style = '';
+        }, 2500);
+      } else {
+        closeModal();
+        showToast(isSignUp ? '✓ Account created!' : '✓ Signed in!', 'success');
+      }
+    } catch (err) {
+      errorEl.textContent = err.message || 'Authentication failed';
+      errorEl.style.background = 'rgba(239, 68, 68, 0.1)';
+      errorEl.style.borderLeftColor = '#EF4444';
+      errorEl.style.color = '#FCA5A5';
+      errorEl.classList.remove('hidden');
+    } finally {
+      submitBtn.disabled = false;
+      submitText.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+    }
+  });
+}
+
+function updateAuthUI() {
+  const authSection = $('authSection');
+  const userSection = $('userSection');
+  
+  if (currentUser) {
+    authSection?.classList.add('hidden');
+    userSection?.classList.remove('hidden');
+    
+    const name = currentUser.user_metadata?.name 
+              || currentUser.email?.split('@')[0] 
+              || 'User';
+    const email = currentUser.email || '';
+    
+    if ($('userName')) $('userName').textContent = name;
+    if ($('userEmail')) $('userEmail').textContent = email;
+    if ($('userAvatar')) $('userAvatar').textContent = name.charAt(0).toUpperCase();
+  } else {
+    authSection?.classList.remove('hidden');
+    userSection?.classList.add('hidden');
+  }
+}
+
+async function saveToCloud(idea, country, sector, budget, analysis) {
+  if (!supabase || !currentUser) return false;
+  
+  try {
+    const { error } = await supabase.from('analyses').insert({
+      user_id: currentUser.id,
+      idea: idea,
+      country: country,
+      sector: sector,
+      budget: budget,
+      risk_score: analysis.riskScore,
+      verdict: analysis.verdict,
+      report: analysis
+    });
+    
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error('Cloud save error:', err);
+    return false;
+  }
+}
+
+async function loadCloudHistory() {
+  if (!supabase || !currentUser) return;
+  
+  const list = $('historyList');
+  if (list) {
+    list.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 40px;">Loading history…</p>';
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('analyses')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    if (error) throw error;
+    
+    if (!list) return;
+    
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 40px;">No analyses yet. Run your first analysis!</p>';
+      return;
+    }
+    
+    list.innerHTML = data.map((h) => {
+      const date = new Date(h.created_at);
+      const timeAgo = getTimeAgo(date);
+      const flag = COUNTRY_DATA[h.country]?.flag || '🌐';
+      return `
+        <div class="history-item" data-cloud-id="${h.id}">
+          <div class="idea">${h.idea.substring(0, 80)}${h.idea.length > 80 ? '...' : ''}</div>
+          <div class="meta">${flag} ${h.risk_score}% · ${timeAgo}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Cloud history load error:', err);
+    loadHistory();
+  }
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+  return date.toLocaleDateString();
+}
+
+// ============ Initialize Layer 7 ============
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait a bit for main DOMContentLoaded to finish
+  setTimeout(() => {
+    setupAuth();
+    initSupabase();
+  }, 100);
+});
