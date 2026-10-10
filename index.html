@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LOOP — Startup Failure Intelligence</title>
+  <title>LOOP — Know why startups fail before you build</title>
+  <meta name="description" content="AI-powered startup failure intelligence. Analyze any idea against 12,847 failed startups across 6 regions before you spend a dollar.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -28,25 +30,31 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a href="#" class="nav-item active" data-section="analyze">
+      <a href="#home" class="nav-item active" data-section="home">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="#analyze" class="nav-item" data-section="analyze">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <span>Analyze</span>
       </a>
-      <a href="#" class="nav-item" data-section="history">
+      <a href="#history" class="nav-item" data-section="history">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
         </svg>
         <span>History</span>
       </a>
-      <a href="#" class="nav-item" data-section="database">
+      <a href="#database" class="nav-item" data-section="database">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>
         </svg>
         <span>Failure DB</span>
       </a>
-      <a href="#" class="nav-item" data-section="pricing">
+      <a href="#pricing" class="nav-item" data-section="pricing">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
@@ -69,22 +77,208 @@
   <!-- Main Content -->
   <main class="main">
 
-    <!-- Top Bar -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <h2 id="pageTitle">Analyze Your Idea</h2>
-        <p id="pageSubtitle">Know why startups like yours failed — before you build.</p>
-      </div>
-      <div class="topbar-right">
-        <div class="status-badge">
+    <!-- SECTION: HOME / LANDING -->
+    <section id="section-home" class="section active">
+
+      <!-- Hero -->
+      <div class="landing-hero">
+        <div class="landing-badge">
           <span class="status-dot"></span>
-          <span>12,847 failures indexed</span>
+          <span>12,847 failures indexed across 6 regions</span>
+        </div>
+        <h1 class="landing-title">
+          Know why startups like yours <span class="highlight-text">fail</span> — before you build.
+        </h1>
+        <p class="landing-subtitle">
+          AI-powered failure intelligence. Describe your idea, and LOOP analyzes it against thousands of real startup post-mortems — region by region.
+        </p>
+        <div class="landing-cta">
+          <button class="btn-hero" data-goto="analyze">
+            Analyze Your Idea Free
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <button class="btn-ghost" data-goto="database">
+            Browse Failures
+          </button>
+        </div>
+        <p class="hero-note">No signup. No credit card. Just answers.</p>
+      </div>
+
+      <!-- Live Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" data-count="12847">0</div>
+          <div class="stat-label">Failures Indexed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" data-count="6">0</div>
+          <div class="stat-label">Regions Covered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" data-count="43" data-suffix="%">0</div>
+          <div class="stat-label">Fail for No Market Need</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" data-count="95" data-suffix="%">0</div>
+          <div class="stat-label">BD Funding Drop (2024)</div>
         </div>
       </div>
-    </header>
 
-    <!-- SECTION: Analyze -->
-    <section id="section-analyze" class="section active">
+      <!-- Why LOOP -->
+      <div class="landing-section">
+        <h2 class="section-heading">Why founders use LOOP</h2>
+        <p class="section-subheading">Most tools tell you what's trending. LOOP tells you what's already dead.</p>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">💀</div>
+            <h3>Failure-first, not hype-first</h3>
+            <p>We analyze 12,000+ post-mortems so you don't have to learn the hard way. Success stories lie — failures don't.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <h3>Region-aware intelligence</h3>
+            <p>Bangladesh, India, Indonesia, Nigeria, Pakistan — every market has different red flags. We know them all.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Brutal honesty, in Bangla</h3>
+            <p>AI that doesn't sugarcoat. Get a Go/No-Go verdict, red flags, and a brutal truth paragraph — in your language.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Unit economics reality check</h3>
+            <p>CAC, LTV, burn rate — benchmarked against real startups in your region and sector.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>Go / No-Go checklist</h3>
+            <p>Not vague advice. A concrete pre-launch checklist that tells you exactly what to validate first.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Private by default</h3>
+            <p>Your idea is yours. No sharing, no training on your data. Delete anytime.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="landing-section">
+        <h2 class="section-heading">How LOOP works</h2>
+        <p class="section-subheading">Three steps. Under two minutes. Zero fluff.</p>
+
+        <div class="steps-row">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <h3>Describe your idea</h3>
+            <p>Tell us what you want to build, where, and your budget. Plain English or Bangla.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <h3>AI analyzes failures</h3>
+            <p>We match your idea against 12,847 post-mortems, regional funding data, and regulatory risks.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <h3>Get your verdict</h3>
+            <p>Risk score, red flags, similar failures, and a Go/No-Go checklist. All in one report.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="landing-section">
+        <h2 class="section-heading">Frequently asked</h2>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Is LOOP free?</summary>
+            <p>Yes. You get 3 analyses per month for free, no signup needed. Pro plan ($29/mo) unlocks unlimited analyses, PDF export, and priority AI.</p>
+          </details>
+          <details class="faq-item">
+            <summary>How accurate is the AI?</summary>
+            <p>LOOP's AI is trained on real post-mortems from CB Insights, Failory, and regional databases. It's designed to challenge your assumptions, not to guarantee outcomes. Always validate with 50+ customer interviews.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Which regions are supported?</summary>
+            <p>Currently: Bangladesh, India, Indonesia, Nigeria, Pakistan, and Global. More regions (Vietnam, Philippines, Egypt) coming soon.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do you store my idea?</summary>
+            <p>Analyses are stored locally in your browser for history. On Pro, they sync to your account. We never train AI on your ideas or share them.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What if I disagree with the verdict?</summary>
+            <p>That's fine — LOOP is a tool, not a judge. Use the red flags and checklist as questions to validate, not absolute truth. Many successful startups had "high risk" ideas.</p>
+          </details>
+        </div>
+      </div>
+
+      <!-- Final CTA -->
+      <div class="final-cta">
+        <h2>Stop building blind.</h2>
+        <p>Find out in 60 seconds whether your idea has been tried — and why it failed.</p>
+        <button class="btn-hero" data-goto="analyze">
+          Analyze Your Idea Free
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <footer class="landing-footer">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="logo-mark">
+              <div class="logo-dot"></div>
+              <span class="logo-text">LOOP</span>
+            </div>
+            <p>Know before you build.</p>
+          </div>
+          <div class="footer-links">
+            <div>
+              <h4>Product</h4>
+              <a data-goto="analyze">Analyze</a>
+              <a data-goto="database">Failure DB</a>
+              <a data-goto="pricing">Pricing</a>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <a href="#">About</a>
+              <a href="#">Blog</a>
+              <a href="#">Contact</a>
+            </div>
+            <div>
+              <h4>Legal</h4>
+              <a href="#">Privacy</a>
+              <a href="#">Terms</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2026 LOOP. Built for founders who learn from others' mistakes.</p>
+        </div>
+      </footer>
+
+    </section>
+
+    <!-- SECTION: ANALYZE -->
+    <section id="section-analyze" class="section">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h2 id="pageTitle">Analyze Your Idea</h2>
+          <p id="pageSubtitle">Know why startups like yours failed — before you build.</p>
+        </div>
+        <div class="topbar-right">
+          <div class="status-badge">
+            <span class="status-dot"></span>
+            <span>12,847 failures indexed</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Input Card -->
       <div class="glass-card input-card">
@@ -143,12 +337,16 @@
 
       <!-- Results -->
       <div id="results" class="results hidden">
-
-        <!-- Risk Score Hero -->
         <div class="glass-card risk-hero">
           <div class="risk-left">
             <div class="risk-circle" id="riskCircle">
               <svg viewBox="0 0 200 200" class="risk-svg">
+                <defs>
+                  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#3B82F6"/>
+                    <stop offset="100%" stop-color="#A855F7"/>
+                  </linearGradient>
+                </defs>
                 <circle cx="100" cy="100" r="85" class="risk-track"/>
                 <circle cx="100" cy="100" r="85" class="risk-progress" id="riskProgress"/>
               </svg>
@@ -169,7 +367,6 @@
           </div>
         </div>
 
-        <!-- Chart Row -->
         <div class="chart-row">
           <div class="glass-card chart-card">
             <h3>Failure Probability by Category</h3>
@@ -181,7 +378,6 @@
           </div>
         </div>
 
-        <!-- Red Flags -->
         <div class="glass-card">
           <div class="card-header">
             <h3>🚩 Red Flags</h3>
@@ -190,7 +386,6 @@
           <ul id="redFlagsList" class="flags-list"></ul>
         </div>
 
-        <!-- Similar Failures -->
         <div class="glass-card">
           <div class="card-header">
             <h3>💀 Similar Failures</h3>
@@ -198,7 +393,6 @@
           <div id="similarFailures" class="failures-grid"></div>
         </div>
 
-        <!-- Checklist -->
         <div class="glass-card">
           <div class="card-header">
             <h3>✅ Go / No-Go Checklist</h3>
@@ -206,7 +400,6 @@
           <ul id="checklist" class="checklist"></ul>
         </div>
 
-        <!-- Brutal Truth -->
         <div class="brutal-truth">
           <div class="brutal-icon">⚡</div>
           <div>
@@ -215,7 +408,6 @@
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="action-row">
           <button id="exportBtn" class="btn-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -230,7 +422,6 @@
             New Analysis
           </button>
         </div>
-
       </div>
 
       <!-- Skeleton Loader -->
@@ -242,10 +433,9 @@
         </div>
         <div class="glass-card skeleton-line"></div>
       </div>
-
     </section>
 
-    <!-- SECTION: History -->
+    <!-- SECTION: HISTORY -->
     <section id="section-history" class="section">
       <div class="glass-card">
         <div class="card-header">
@@ -256,7 +446,7 @@
       </div>
     </section>
 
-    <!-- SECTION: Database -->
+    <!-- SECTION: DATABASE -->
     <section id="section-database" class="section">
       <div class="glass-card">
         <h3>Startup Failure Database</h3>
@@ -265,7 +455,7 @@
       </div>
     </section>
 
-    <!-- SECTION: Pricing -->
+    <!-- SECTION: PRICING -->
     <section id="section-pricing" class="section">
       <div class="pricing-grid">
         <div class="glass-card pricing-card">
