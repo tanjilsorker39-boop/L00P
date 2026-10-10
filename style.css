@@ -1750,3 +1750,205 @@ body {
   .action-row-enhanced { flex-direction: column; }
   .action-row-enhanced .btn-action { width: 100%; justify-content: center; }
 }
+
+
+/* ============================================ */
+/* ===== LOADING EXPERIENCE UPGRADE (Layer 4) = */
+/* ============================================ */
+
+.loader-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(24px);
+  margin-bottom: 20px;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loader-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.08), transparent 70%);
+  pointer-events: none;
+  animation: breathe 4s infinite ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Orbiting loader */
+.loader-orb {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 32px;
+}
+
+.loader-orb-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6, #A855F7);
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.loader-orb-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+.loader-orb-ring:nth-child(2) {
+  inset: 15px;
+  border-top-color: var(--accent-2);
+  animation: spin 1.8s linear infinite reverse;
+}
+
+.loader-orb-ring:nth-child(3) {
+  inset: 30px;
+  border-top-color: var(--success);
+  animation: spin 2.4s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Progress bar */
+.loader-progress-wrap {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+.loader-progress-bar {
+  height: 6px;
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.loader-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #A855F7, #EC4899);
+  background-size: 200% 100%;
+  border-radius: 100px;
+  width: 0;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: gradientShift 2s infinite linear;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.loader-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* Stage text */
+.loader-stage {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-align: center;
+  min-height: 26px;
+  letter-spacing: -0.01em;
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loader-substage {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 32px;
+  max-width: 420px;
+  min-height: 40px;
+  line-height: 1.5;
+}
+
+/* Stage dots */
+.loader-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.loader-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.2);
+  transition: all 0.3s ease;
+}
+
+.loader-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  transform: scale(1.3);
+}
+
+.loader-dot.done {
+  background: var(--success);
+}
+
+/* Tip box */
+.loader-tip {
+  max-width: 460px;
+  padding: 16px 20px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  text-align: center;
+  position: relative;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loader-tip::before {
+  content: '💡';
+  display: block;
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.loader-tip strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Keep old skeleton for fallback */
+.skeleton-line,
+.skeleton-block {
+  /* existing rules */
+}
